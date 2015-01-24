@@ -1,0 +1,5 @@
+*.taskpaper
+*.bak
+temp*
+.DS_Store
+*~
