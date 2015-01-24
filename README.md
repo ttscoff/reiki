@@ -1,4 +1,4 @@
-Reiki, called with `r`, is a shortcut for running rake tasks with arguments. No brackets, just spaces and commas (and colons to separate serial tasks). 
+Reiki --- a bash function you can call with the command `r` --- is a shortcut for running rake tasks with arguments. No brackets, just spaces and commas (and colons to separate serial tasks). 
 
 This is currently working wonderfully for me, but I'm open to pull requests and the project will develop further if my needs expand.
 
@@ -9,6 +9,13 @@ I get a little crazy with my [Rakefiles](http://www.ruby-doc.org/core-1.9.3/doc/
 I get that most people don't abuse Rakefiles to the extent that I do. You probably don't need this if you've never made a TextExpander shortcut to fill in tedious task names.
 
 ### Usage
+
+Reiki is called with `r` followed by the task or fragment of a task (fuzzy matched), followed by task arguments, commas separated, and optionally more tasks, separated by colons.
+
+If a `build` task were the only task in your Rakefile starting with "b":
+
+    r b
+    => rake build
 
 Reiki uses fuzzy matching to figure out which task you want to run.
 
@@ -94,4 +101,8 @@ You can override the default configuration using switches as needed. Use `r -T` 
         -a SECONDS  Prompts run default result after SECONDS
         -q      Run quietly (use first match in case of multiples)
         -d      Output debug info
+
+### Bash completion
+
+There's an experimental completion function available for Bash in the reiki.completion.bash file. It mostly works for me, but has some issues and isn't terribly necessary with something that takes shortcuts and fuzzy matches anyway...
 
