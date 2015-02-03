@@ -109,7 +109,7 @@ ENDOPTIONSHELP
 	if [[ ! $eval_this =~ ^rake[[:space:]]+$ ]]; then
 		eval "$eval_this"
 	else
-		__color_out "\n%b_red%Cancelled: %red%no command given"
+		__color_out "\n%b_red%Cancelled: %red%no task specified"
 	fi
 }
 
