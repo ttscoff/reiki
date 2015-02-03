@@ -106,7 +106,11 @@ ENDOPTIONSHELP
 	IFS=
 	tput sgr0
 
-	eval "$eval_this"
+	if [[ ! $eval_this =~ ^rake[[:space:]]+$ ]]; then
+		eval "$eval_this"
+	else
+		__color_out "\n%b_red%Cancelled: %red%no command given"
+	fi
 }
 
 __r () {
@@ -246,11 +250,12 @@ __r_parse_matches () {
 	declare -a matches=( $@ )
 	if [[ ${#matches[@]} > 1 && $q != 1 ]]; then
 		verify_task=0
-		local outstring="%yellow%Multiple matches (${#matches[@]})"
+		local outstring="%red%${#matches[@]} matches %b_white%($(printf "%%purple%%%s%%b_white%%, " "${matches[@]}"|sed -E 's/, $//')%b_white%)\n"
+
 		if [[ $a > 0 ]]; then
-			outstring="${outstring}. Assuming '%red%${matches[0]}%yellow%', running in ${a}s"
+			outstring+="Assuming '%red%${matches[0]}%yellow%', running in ${a}s"
 		fi
-		>&2 __color_out "${outstring}. Type '%red%q%yellow%' to cancel\n"
+		>&2 __color_out "${outstring} ('%red%q%yellow%' to cancel)\n"
 		local result cmd_match
 		for match in ${matches[@]}; do
 			result=$(__r_verify_task $match $a)
