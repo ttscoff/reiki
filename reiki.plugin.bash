@@ -223,7 +223,7 @@ __r () {
 		#>	quote spaces between non-comma-separated args
 		args=$(echo "$@"| sed -E 's/, */,/g' \
 			| sed -E 's/([\(\)\|])/\\\1/g' \
-			| sed -E 's/([a-zA-Z0-9]+( +[a-zA-Z0-9]+)+)/"\1"/')
+			| sed -E 's/([^ ]+( +[^ ]+)+)/"\1"/')
 		cmd="${cmd}[$args]"
 		colorout="${colorout}%n_black%[%b_white%${args}%n_black%]" # pretty output
 	fi
