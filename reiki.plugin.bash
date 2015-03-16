@@ -109,7 +109,7 @@ ENDOPTIONSHELP
 	if [[ ! $eval_this =~ ^rake[[:space:]]+$ ]]; then
 		eval "$eval_this"
 	else
-		__color_out "\n%b_red%Cancelled: %red%no task specified"
+		__color_out "\n%b_red%Cancelled: %red%no command given"
 	fi
 }
 
@@ -247,7 +247,8 @@ __r_parse_matches () {
 	__r_debug 0 $*
 	local q=$1; shift
 	local a=$1; shift
-	declare -a matches=( $@ )
+	# sort matches (remaining args) by length, ascending
+	IFS=$'\n' GLOBIGNORE='*' matches=($(printf '%s\n' $@ | awk '{ print length($0) " " $0; }' | sort -n | cut -d ' ' -f 2-))
 	if [[ ${#matches[@]} > 1 && $q != 1 ]]; then
 		verify_task=0
 		local outstring="%red%${#matches[@]} matches %b_white%($(printf "%%purple%%%s%%b_white%%, " "${matches[@]}"|sed -E 's/, $//')%b_white%)\n"
