@@ -1,0 +1,170 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Reiki by ttscoff</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Reiki</h1>
+        <p>For when you get stupid with your Rakefiles.</p>
+        <p class="view"><a href="https://github.com/ttscoff/reiki">View the Project on GitHub <small>ttscoff/reiki</small></a></p>
+        <ul>
+          <li><a href="https://github.com/ttscoff/reiki/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/ttscoff/reiki/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/ttscoff/reiki">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <p>Reiki --- a bash function you can call with the command <code>r</code> --- is a shortcut for running rake tasks with arguments. No brackets, just spaces and commas (and colons to separate serial tasks). </p>
+
+<p>This is currently working wonderfully for me, but I'm open to pull requests and the project will develop further if my needs expand.</p>
+
+<h3>
+<a id="why" class="anchor" href="#why" aria-hidden="true"><span class="octicon octicon-link"></span></a>Why?</h3>
+
+<p>I get a little crazy with my <a href="http://www.ruby-doc.org/core-1.9.3/doc/rake/rakefile_rdoc.html">Rakefiles</a> in cases where it's my command central, such as my Jekyll blog or my app <a href="http://marked2app.com">Marked 2</a> where I need to perform a wide variety of tasks with various arguments and sequences. Typing out task names with arguments in Rake's command line syntax can be tedious with square brackets, commas, quoted arguments, etc. I build Reiki for my own sanity.</p>
+
+<p>I get that most people don't abuse Rakefiles to the extent that I do. You probably don't need this if you've never made a TextExpander shortcut to fill in tedious task names.</p>
+
+<h3>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h3>
+
+<p>Reiki is called with <code>r</code> followed by the task or fragment of a task (fuzzy matched), followed by task arguments, commas separated, and optionally more tasks, separated by colons.</p>
+
+<p>If a <code>build</code> task were the only task in your Rakefile starting with "b":</p>
+
+<pre><code>r b
+=&gt; rake build
+</code></pre>
+
+<p>Reiki uses fuzzy matching to figure out which task you want to run.</p>
+
+<ul>
+<li>If the first argument to <code>r</code> fully matches a rake task and there are no other potential matches, it runs it with any following arguments as arguments for that task (e.g. <code>r build true</code> becomes <code>rake build[true]</code>). </li>
+<li>If there is more than one possible match, it checks to see if the second argument makes sense as <code>$1_$2</code>. If that's the case, it runs that with additional arguments. </li>
+<li>If only the first letter(s) of a <code>$1_$2</code> task are provided, it guesses and checks before running (e.g. <code>r f d jekyll blogging</code> becomes <code>rake find_draft["jekyll blogging"]</code>).</li>
+<li>Additional arguments are assumed to be a quoted string unless there are commas, in which case it combines them and automatically quotes only resulting arguments with spaces in them (e.g. <code>r gd true, publishing jekyll blogging post</code> runs <code>rake gen_deploy[true,"publishing jekyll blogging post"]</code> on my blog, and the <code>gen_deploy</code> task takes an argument and a git commit message).</li>
+</ul>
+
+<p>For example, in my Jekyll setup:</p>
+
+<pre><code>r fdr jekyll
+=&gt; rake find_draft[jekyll]
+
+r fdf reiki bash
+=&gt; rake find_draft_fulltext["reiki bash"]
+
+r gen true, commit message
+=&gt; rake generate[true,"commit message"]
+</code></pre>
+
+<p>You can separate multiple (serial) tasks with a colon (:). Arguments after a task and before a colon are treated as arguments to each task. Multiple tasks are run by rake as a series.</p>
+
+<pre><code>$ r bld xcode true: launch debug
+=&gt; rake build[xcode,true] launch[debug]
+</code></pre>
+
+<p>Reiki can automatically run the first match, or it can be set to verify with a question on the command line if there are multiple matches (or forced to always verify with the "quiet" option). A timeout can be set on the verification to automatically run if no response is provided.</p>
+
+<p>If your Terminal supports color, output will be highlighted. If not, you'll get clean output with no escape sequences.</p>
+
+<h3>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h3>
+
+<p>Save the <code>reiki.plugin.bash</code> to disk and source it in your <code>.bash_profile</code>. </p>
+
+<pre><code>source ~/plugins/reiki.plugin.bash
+</code></pre>
+
+<p>When loaded, it will define the <code>r</code> command. Helpers are defined with <code>__r_</code> prefixes as a namespace.</p>
+
+<p>If you use Bash-it, you can just drop it in your <code>~/.bash_it/plugins/enabled</code> folder.</p>
+
+<h3>
+<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configuration</h3>
+
+<p>You can configure defaults in the script (but see the next section to override them without modifying the original):</p>
+
+<p><code>verify_task=1</code> 
+: to force a verification after guessing</p>
+
+<p><code>auto_timeout=X</code> 
+: to change number of seconds to wait for verification, 0 to disable</p>
+
+<p><code>quiet=1</code> 
+: to force silent mode, using first option if multiple matches are found</p>
+
+<p><code>debug=1</code> 
+: for verbose reporting</p>
+
+<h4>
+<a id="environment-variables" class="anchor" href="#environment-variables" aria-hidden="true"><span class="octicon octicon-link"></span></a>Environment variables</h4>
+
+<p>Defaults can be overriden by environment variables in your login profile/rc:</p>
+
+<pre><code>export R_VERIFY_TASK=true
+export R_AUTO_TIMEOUT=5
+export R_DEBUG=true
+export R_QUIET=true
+</code></pre>
+
+<h3>
+<a id="options" class="anchor" href="#options" aria-hidden="true"><span class="octicon octicon-link"></span></a>Options</h3>
+
+<p>You can override the default configuration using switches as needed. Use <code>r -T</code> to list options.</p>
+
+<pre><code>$ r -H
+r: A shortcut for running rake tasks with fuzzy matching
+Parameters are task fragments and arguments, multiple arguments comma-separated
+
+Example:
+    $ r gen dep commit message
+    =&gt; rake generate_deploy[commit message]
+
+Options:
+
+    -h      show options
+    -H      show help
+    -T      List available tasks
+    -v      Interactively verify task matches before running
+    -a SECONDS  Prompts run default result after SECONDS
+    -q      Run quietly (use first match in case of multiples)
+    -d      Output debug info
+</code></pre>
+
+<h3>
+<a id="bash-completion" class="anchor" href="#bash-completion" aria-hidden="true"><span class="octicon octicon-link"></span></a>Bash completion</h3>
+
+<p>There's an experimental completion function available for Bash in the reiki.completion.bash file. It mostly works for me, but has some issues and isn't terribly necessary with something that takes shortcuts and fuzzy matches anyway...</p>
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/ttscoff">ttscoff</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-34296025-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
