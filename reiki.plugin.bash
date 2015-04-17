@@ -301,7 +301,34 @@ __r_verify_task () {
 
 }
 
+# Common util for color output using templates
+# Template format:
+#     %colorname%: text following colored normal weight
+#     %b% or %b_colorname%: bold foreground
+#     %u% or %u_colorname%: underline foreground
+#     %s% or %s_colorname%: bold foreground and background
+#     %n% or %n_colorname%: return to normal weight
+#     %reset%: reset foreground and background to default
+# Color names (prefix bg to set background):
+#     black
+#     red
+#     green
+#     yellow
+#     cyan
+#     purple
+#     blue
+#     white
+# @option: -n no newline
+# @param 1: (Required) template string to process and output
 __color_out () {
+	local newline=""
+	OPTIND=1
+	while getopts "n" opt; do
+	  case $opt in
+	    n) newline="n";;
+	  esac
+	done
+	shift $((OPTIND-1))
 	# color output variables
 	if which tput > /dev/null 2>&1 && [[ $(tput -T$TERM colors) -ge 8 ]]; then
 		local _c_n="\033[0m"
@@ -326,13 +353,16 @@ __color_out () {
 		local _c_bgwhite="\033[47m"
 		local _c_reset="\033[0m"
 	fi
-	local template_str="echo -e \"$(echo -en "$@" \
+	local template_str="echo -e${newline} \"$(echo -en "$@" \
 		| sed -E 's/%([busn])_/${_c_\1}%/g' \
 		| sed -E 's/%(bg)?(b|u|s|n|black|red|green|yellow|cyan|purple|blue|white|reset)%/${_c_\1\2}/g')$_c_reset\""
 
 	eval "$template_str"
 }
 
+_r_command_not_found () {
+	echo "R NOT FOUND $@"
+}
 
 # Completion function for `r`
 __r_bash_complete() {
